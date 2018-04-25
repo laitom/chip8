@@ -237,7 +237,7 @@ TEST_CASE("test opcode handlers", "[opcode_handlers]")
 	uint8_t reg2 = 0x4;
 
 	state.memory[state.pc] = 0x80 + reg1;
-	state.memory[state.pc+1] = (reg2 << 4) + 0x1;
+	state.memory[state.pc+1] = (reg2 << 4) | 0x1;
 	state.V[reg1] = 0x09;
 	state.V[reg2] = 0x0A;
 
@@ -248,6 +248,75 @@ TEST_CASE("test opcode handlers", "[opcode_handlers]")
 	REQUIRE(state.pc == 0x0200+2);
     }
 
+    SECTION("handle_8xy2")
+    {
+	uint8_t reg1 = 0xD;
+	uint8_t reg2 = 0xC;
+
+	state.memory[state.pc] = 0x80 + reg1;
+	state.memory[state.pc+1] = (reg2 << 4) | 0x2;
+	state.V[reg1] = 0x0B;
+	state.V[reg2] = 0x0C;
+
+	auto handle = chip8::get_handler(state);
+	handle(state);
+
+	REQUIRE(state.V.at(reg1) == 0x08);
+	REQUIRE(state.pc == 0x0200+2);
+    }
+
+    SECTION("handle_8xy3")
+    {
+	uint8_t reg1 = 0xD;
+	uint8_t reg2 = 0xC;
+
+	state.memory[state.pc] = 0x80 + reg1;
+	state.memory[state.pc+1] = (reg2 << 4) | 0x3;
+	state.V[reg1] = 0x09;
+	state.V[reg2] = 0x0A;
+
+	auto handle = chip8::get_handler(state);
+	handle(state);
+
+	REQUIRE(state.V.at(reg1) == 0x03);
+	REQUIRE(state.pc == 0x0200+2);
+    }
+
+    SECTION("handle_8xy4")
+    {
+	uint8_t reg1 = 0xD;
+	uint8_t reg2 = 0xC;
+
+	state.memory[state.pc] = 0x80 + reg1;
+	state.memory[state.pc+1] = (reg2 << 4) | 0x4;
+
+	SECTION("register sum > 255")
+	{
+	state.V[reg1] = 0xFF;
+	state.V[reg2] = 0xFF;
+
+	auto handle = chip8::get_handler(state);
+	handle(state);
+
+	REQUIRE(state.V.at(reg1) == 0xFE);
+	REQUIRE(state.V.at(0xF) == 1);
+	REQUIRE(state.pc == 0x0200+2);
+	}
+
+	SECTION("register sum <= 255")
+	{
+	state.V[reg1] = 0x0E;
+	state.V[reg2] = 0x01;
+
+	auto handle = chip8::get_handler(state);
+	handle(state);
+
+	REQUIRE(state.V.at(reg1) == 0x0F);
+	REQUIRE(state.V.at(0xF) == 0);
+	REQUIRE(state.pc == 0x0200+2);
+	}
+    }
+    
     SECTION("handle_9xy0")
     {
 	uint8_t reg1 = 0x2;

@@ -23,6 +23,9 @@ chip8::opcode_handler chip8::get_handler(const struct chip8::state& state)
 	    {0x7000, handle_7xkk},
 	    {0x8000, handle_8xy0},
 	    {0x8001, handle_8xy1},
+	    {0x8002, handle_8xy2},
+	    {0x8003, handle_8xy3},
+	    {0x8004, handle_8xy4},
 	    {0x9000, handle_9xy0},
 	    {0xA000, handle_Annn},
 	    {0xB000, handle_Bnnn},
@@ -34,9 +37,9 @@ chip8::opcode_handler chip8::get_handler(const struct chip8::state& state)
     
     uint16_t key = (state.memory.at(state.pc) & 0xF0) << 8;
     
-    if ((key & 0xF000) == 0)
+    if (((key & 0xF000) >> 12) == 0x0)
 	key |= state.memory.at(state.pc+1);
-    else if ((key & 0xF000) == 8)
+    else if (((key & 0xF000) >> 12) == 0x8)
 	key |= state.memory.at(state.pc+1) & 0x0F;
 
     auto handler = handler_map.at(key);
@@ -147,9 +150,42 @@ void chip8::handle_8xy1(struct chip8::state& state)
 {
     auto reg1 = state.memory.at(state.pc) & 0x0F;
     auto reg2 = (state.memory.at(state.pc+1) & 0xF0) >> 4;
-    auto val = state.V.at(reg1) | state.V.at(reg2);
 
-    state.V[reg1] = val;
+    state.V[reg1] |= state.V.at(reg2);
+    state.pc += 2;
+}
+
+void chip8::handle_8xy2(struct chip8::state& state)
+{
+    auto reg1 = state.memory.at(state.pc) & 0x0F;
+    auto reg2 = (state.memory.at(state.pc+1) & 0xF0) >> 4;
+
+    state.V[reg1] &= state.V.at(reg2);
+    state.pc += 2;
+}
+
+void chip8::handle_8xy3(struct chip8::state& state)
+{
+    auto reg1 = state.memory.at(state.pc) & 0x0F;
+    auto reg2 = (state.memory.at(state.pc+1) & 0xF0) >> 4;
+
+    state.V[reg1] ^= state.V.at(reg2);
+    state.pc += 2;
+}
+
+void chip8::handle_8xy4(struct chip8::state& state)
+{
+    auto reg1 = state.memory.at(state.pc) & 0x0F;
+    auto reg2 = (state.memory.at(state.pc+1) & 0xF0) >> 4;
+    uint16_t res = state.V.at(reg1) + state.V.at(reg2);
+
+    state.V[reg1] = res & 0xFF;
+    
+    if (res & 0xFF00)
+	state.V[0xF] = 1;
+    else
+	state.V[0xF] = 0;
+	
     state.pc += 2;
 }
 

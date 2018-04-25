@@ -38,8 +38,10 @@ namespace chip8
     void handle_7xkk(struct state&);
     void handle_8xy0(struct state&);
     void handle_8xy1(struct state&);
+    void handle_8xy2(struct state&);
+    void handle_8xy3(struct state&);
+    void handle_8xy4(struct state&);
     void handle_9xy0(struct state&);
-    void handle_opcodes_with_leading_0(struct state&);
     void handle_Annn(struct state&);
     void handle_Bnnn(struct state&);
     void handle_Cxkk(struct state&);
