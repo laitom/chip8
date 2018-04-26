@@ -26,6 +26,7 @@ chip8::opcode_handler chip8::get_handler(const struct chip8::state& state)
 	    {0x8002, handle_8xy2},
 	    {0x8003, handle_8xy3},
 	    {0x8004, handle_8xy4},
+	    {0x8005, handle_8xy5},
 	    {0x9000, handle_9xy0},
 	    {0xA000, handle_Annn},
 	    {0xB000, handle_Bnnn},
@@ -179,13 +180,26 @@ void chip8::handle_8xy4(struct chip8::state& state)
     auto reg2 = (state.memory.at(state.pc+1) & 0xF0) >> 4;
     uint16_t res = state.V.at(reg1) + state.V.at(reg2);
 
-    state.V[reg1] = res & 0xFF;
-    
     if (res & 0xFF00)
 	state.V[0xF] = 1;
     else
 	state.V[0xF] = 0;
-	
+
+    state.V[reg1] = res & 0xFF;
+    state.pc += 2;
+}
+
+void chip8::handle_8xy5(struct chip8::state& state)
+{
+    auto reg1 = state.memory.at(state.pc) & 0x0F;
+    auto reg2 = (state.memory.at(state.pc+1) & 0xF0) >> 4;
+
+    if (state.V.at(reg1) > state.V.at(reg2))
+	state.V[0xF] = 1;
+    else
+	state.V[0xF] = 0;
+
+    state.V[reg1] -= state.V.at(reg2);
     state.pc += 2;
 }
 

@@ -316,6 +316,42 @@ TEST_CASE("test opcode handlers", "[opcode_handlers]")
 	REQUIRE(state.pc == 0x0200+2);
 	}
     }
+
+    SECTION("handle_8xy5")
+    {
+	uint8_t reg1 = 0xD;
+	uint8_t reg2 = 0xC;
+
+	state.memory[state.pc] = 0x80 + reg1;
+	state.memory[state.pc+1] = (reg2 << 4) | 0x5;
+
+	SECTION("V[x] > V[y]")
+	{
+	    state.V[reg1] = 0x0F;
+	    state.V[reg2] = 0x09;
+
+	    auto handle = chip8::get_handler(state);
+	    handle(state);
+
+	    REQUIRE(state.V.at(reg1) == 0x06);
+	    REQUIRE(state.V.at(0xF) == 1);
+	    REQUIRE(state.pc == 0x0200+2);
+	}
+
+	SECTION("V[x] <= V[y]")
+	{
+	    state.V[reg1] = 0x09;
+	    state.V[reg2] = 0x0F;
+
+	    auto handle = chip8::get_handler(state);
+	    handle(state);
+
+	    // TODO: What should be stored in V[x] since it's the result of subtracting a larger uint from a smaller one?
+	    // REQUIRE(state.V.at(reg1) == ???);
+	    REQUIRE(state.V.at(0xF) == 0);
+	    REQUIRE(state.pc == 0x0200+2);
+	}
+    }
     
     SECTION("handle_9xy0")
     {
