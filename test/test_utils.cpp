@@ -420,6 +420,38 @@ TEST_CASE("test opcode handlers", "[opcode_handlers]")
 	    REQUIRE(state.pc == 0x0200+2);
 	}
     }
+
+    SECTION("handle_8xyE")
+    {
+	uint8_t reg = 0xD;
+
+	state.memory[state.pc] = 0x80 + reg;
+	state.memory[state.pc+1] = 0x0E;
+
+	SECTION("msb == 1")
+	{
+	    state.V[reg] = 0x81;
+
+	    auto handle = chip8::get_handler(state);
+	    handle(state);
+
+	    REQUIRE(state.V.at(reg) == 0x2);
+	    REQUIRE(state.V.at(0xF) == 1);
+	    REQUIRE(state.pc == 0x0200+2);
+	}
+
+	SECTION("msb != 1")
+	{
+	    state.V[reg] = 0x40;
+
+	    auto handle = chip8::get_handler(state);
+	    handle(state);
+
+	    REQUIRE(state.V.at(reg) == 0x80);
+	    REQUIRE(state.V.at(0xF) == 0);
+	    REQUIRE(state.pc == 0x0200+2);
+	}
+    }
     
     SECTION("handle_9xy0")
     {
