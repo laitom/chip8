@@ -94,10 +94,7 @@ void chip8::handle_3xkk(struct chip8::state& state)
     auto reg = (state.memory.at(state.pc) & 0x0F);
     auto val = state.memory.at(state.pc+1);
 
-    if (state.V.at(reg) == val)
-	state.pc += 2;
-
-    state.pc += 2;
+    state.pc += (state.V.at(reg) == val) ? 4 : 2;
 }
 
 void chip8::handle_4xkk(struct chip8::state& state)
@@ -105,10 +102,7 @@ void chip8::handle_4xkk(struct chip8::state& state)
     auto reg = (state.memory.at(state.pc) & 0x0F);
     auto val = state.memory.at(state.pc+1);
 
-    if (state.V.at(reg) != val)
-	state.pc += 2;
-
-    state.pc += 2;
+    state.pc += (state.V.at(reg) != val) ? 4 : 2;
 }
 
 void chip8::handle_5xy0(struct chip8::state& state)
@@ -116,10 +110,7 @@ void chip8::handle_5xy0(struct chip8::state& state)
     auto reg1 = (state.memory.at(state.pc) & 0x0F);
     auto reg2 = ((state.memory.at(state.pc+1) & 0xF0) >> 4);
 
-    if (state.V.at(reg1) == state.V.at(reg2))
-	state.pc += 2;
-
-    state.pc += 2;
+    state.pc += (state.V.at(reg1) == state.V.at(reg2)) ? 4 : 2;
 }
 
 void chip8::handle_6xkk(struct chip8::state& state)
@@ -182,11 +173,7 @@ void chip8::handle_8xy4(struct chip8::state& state)
     auto reg2 = (state.memory.at(state.pc+1) & 0xF0) >> 4;
     uint16_t res = state.V.at(reg1) + state.V.at(reg2);
 
-    if (res & 0xFF00)
-	state.V[0xF] = 1;
-    else
-	state.V[0xF] = 0;
-
+    state.V[0xF] = (res & 0xFF00) ? 1 : 0;
     state.V[reg1] = res & 0xFF;
     state.pc += 2;
 }
@@ -196,11 +183,7 @@ void chip8::handle_8xy5(struct chip8::state& state)
     auto reg1 = state.memory.at(state.pc) & 0x0F;
     auto reg2 = (state.memory.at(state.pc+1) & 0xF0) >> 4;
 
-    if (state.V.at(reg1) > state.V.at(reg2))
-	state.V[0xF] = 1;
-    else
-	state.V[0xF] = 0;
-
+    state.V[0xF] = (state.V.at(reg1) > state.V.at(reg2)) ? 1 : 0;
     state.V[reg1] -= state.V.at(reg2);
     state.pc += 2;
 }
@@ -209,11 +192,7 @@ void chip8::handle_8xy6(struct chip8::state& state)
 {
     auto reg = state.memory.at(state.pc) & 0xF;
 
-    if (state.V.at(reg) & 0x1)
-	state.V[0xF] = 1;
-    else
-	state.V[0xF] = 0;
-
+    state.V[0xF] = (state.V.at(reg) & 0x1) ? 1 : 0;
     state.V[reg] >>= 1;
     state.pc += 2;
 }
@@ -223,11 +202,7 @@ void chip8::handle_8xy7(struct chip8::state& state)
     auto reg1 = state.memory.at(state.pc) & 0x0F;
     auto reg2 = (state.memory.at(state.pc+1) & 0xF0) >> 4;
 
-    if (state.V.at(reg2) > state.V.at(reg1))
-	state.V[0xF] = 1;
-    else
-	state.V[0xF] = 0;
-
+    state.V[0xF] = (state.V.at(reg2) > state.V.at(reg1)) ? 1 : 0;
     state.V[reg1] = state.V.at(reg2) - state.V.at(reg1);
     state.pc += 2;
 }
@@ -237,10 +212,7 @@ void chip8::handle_9xy0(struct chip8::state& state)
     auto reg1 = state.memory.at(state.pc) & 0x0F;
     auto reg2 = (state.memory.at(state.pc+1) & 0xF0) >> 4;
 
-    if (state.V.at(reg1) != state.V.at(reg2))
-	state.pc += 2;
-
-    state.pc += 2;
+    state.pc += (state.V.at(reg1) != state.V.at(reg2)) ? 4 : 2;
 }
 
 void chip8::handle_Annn(struct chip8::state& state)
