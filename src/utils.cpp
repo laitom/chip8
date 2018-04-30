@@ -36,7 +36,7 @@ chip8::opcode_handler chip8::get_handler(const struct chip8::state& state)
 	    {0xC000, handle_Cxkk},
 	    {0xD000, handle_Dxyn},
 	    {0xE000, handle_opcodes_with_leading_E},
-	    {0xF000, handle_opcodes_with_leading_F},
+	    {0xF007, handle_Fx07},
 	};
     
     uint16_t key = (state.memory.at(state.pc) & 0xF0) << 8;
@@ -45,6 +45,8 @@ chip8::opcode_handler chip8::get_handler(const struct chip8::state& state)
 	key |= state.memory.at(state.pc+1);
     else if (((key & 0xF000) >> 12) == 0x8)
 	key |= state.memory.at(state.pc+1) & 0x0F;
+    else if (((key & 0xF000) >> 12) == 0xF)
+	key |= state.memory.at(state.pc+1);
 
     auto handler = handler_map.at(key);
 
@@ -272,11 +274,11 @@ void chip8::handle_opcodes_with_leading_E(struct chip8::state& state)
 #endif
 }
 
-void chip8::handle_opcodes_with_leading_F(struct chip8::state& state)
+void chip8::handle_Fx07(struct chip8::state& state)
 {
-#ifndef CHIP8_TEST
-    return;
-#else
-    std::cout << "handle_opcodes_with_leading_F\n";
-#endif
+    auto reg = state.memory.at(state.pc) & 0x0F;
+
+    state.V[reg] = state.delay_timer;
+    state.pc += 2;
 }
+

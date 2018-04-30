@@ -51,7 +51,7 @@ namespace chip8
     void handle_Cxkk(struct state&);
     void handle_Dxyn(struct state&);
     void handle_opcodes_with_leading_E(struct state&);
-    void handle_opcodes_with_leading_F(struct state&);
+    void handle_Fx07(struct state&);
 }
 
 #endif // CHIP8_UTILS_H_

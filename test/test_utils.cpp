@@ -532,5 +532,20 @@ TEST_CASE("test opcode handlers", "[opcode_handlers]")
 	    REQUIRE(state.pc == 0x0200+2);
 	}
     }
+
+    SECTION("handle_Fx07")
+    {
+	uint8_t reg = 1;
+	
+	state.memory[state.pc] = 0xF0 + reg;
+	state.memory[state.pc+1] = 0x07;
+	state.delay_timer = 30;
+
+	auto handle = chip8::get_handler(state);
+	handle(state);
+
+	REQUIRE(state.V.at(1) == 30);
+	REQUIRE(state.pc == 0x0200+2);
+    }
 }
 
